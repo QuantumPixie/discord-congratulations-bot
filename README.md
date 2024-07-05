@@ -1,4 +1,5 @@
 # discord-congratulations-bot
+
 A Node.js project for a Discord bot with an integrated REST API that sends a congratulatory messages including a random gif, whenever a user / student completes a sprint.
 
 ## Key Features
@@ -14,7 +15,7 @@ A Node.js project for a Discord bot with an integrated REST API that sends a con
 - **Database:** SQLite
 - **ORM:** Kysely
 - **Validation:** zod
-- **Testing:** Vitest/Jest
+- **Testing:** Vitest/Supertest
 - **Code Quality:** ESLint, Prettier
 - **Language:** TypeScript
 
@@ -54,7 +55,7 @@ npm run migrate:latest
 
 ````
 
-We can also run migration:make to make a new migration file:
+We can also make a new migration file:
 
 ```sh
 npm run migrate:make <migration_name>
@@ -107,4 +108,3 @@ curl -X POST http://localhost:8000/messages -H "Content-Type: application/json" 
   "sprintCode": "WD-1.1"
 }'
 ```
-
