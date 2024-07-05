@@ -1,7 +1,13 @@
 import { db } from '../database';
-import { Templates as Template, TemplatesUpdate } from '../database/types';
+import { Templates as Template } from '../database/types';
 import { mapTemplate } from '../utils/mapTypes/mapTemplate';
-import { sql } from 'kysely';
+import { ColumnType, sql } from 'kysely';
+
+type RawType<T> = T extends ColumnType<infer U, any, any> ? U : T;
+
+type UpdatableTemplate = {
+  [K in keyof Template]?: RawType<Template[K]>;
+};
 
 export const templateRepository = {
   async findAll(): Promise<Template[]> {
@@ -34,11 +40,14 @@ export const templateRepository = {
 
   async update(
     id: number,
-    template: Partial<TemplatesUpdate>
+    template: Partial<UpdatableTemplate>
   ): Promise<boolean> {
+    // Exclude 'id' field from the update object
+    const { id: _, ...updateData } = template;
+
     const result = await db
       .updateTable('templates')
-      .set(template)
+      .set(updateData)
       .where('id', '=', id)
       .execute();
     return result.length > 0;
