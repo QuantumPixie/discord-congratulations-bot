@@ -1,6 +1,13 @@
+import { ColumnType } from 'kysely';
 import { db } from '../database';
-import { Messages as Message, MessagesUpdate } from '../database/types';
+import { Messages as Message } from '../database/types';
 import { mapMessage } from '../utils/mapTypes/mapMessage';
+
+type UpdatableMessage = {
+  [K in keyof Message]?: Message[K] extends ColumnType<infer T, any, any>
+    ? T
+    : Message[K];
+};
 
 export const messageRepository = {
   async findAll(): Promise<Message[]> {
@@ -36,7 +43,10 @@ export const messageRepository = {
       .execute();
   },
 
-  async update(id: number, message: Partial<MessagesUpdate>): Promise<boolean> {
+  async update(
+    id: number,
+    message: Partial<UpdatableMessage>
+  ): Promise<boolean> {
     const result = await db
       .updateTable('messages')
       .set(message)
