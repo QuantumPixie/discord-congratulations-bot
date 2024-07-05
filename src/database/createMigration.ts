@@ -1,7 +1,7 @@
 import { writeFile } from 'fs/promises';
 import * as path from 'path';
 
-async function createMigrationFile(description: string) {
+export async function createMigrationFile(description: string) {
   if (!description) {
     console.error('Usage: npm run create-migration <migration_description>');
     process.exit(1);
