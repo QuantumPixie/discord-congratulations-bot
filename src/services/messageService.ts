@@ -1,14 +1,23 @@
 import { fetchRandomGif } from './gifService';
-import { sendMessageToDiscord } from './discordService';
+import { sendMessageToDiscord, fetchDiscordUser } from './discordService';
 import { messageRepository } from '../repositories/messageRepository';
 import { templateRepository } from '../repositories/templateRepository';
 import { sprintRepository } from '../repositories/sprintRepository';
 import { userRepository } from '../repositories/userRepository';
-import { fetchDiscordUser } from './discordService';
-import { InsertableMessage } from '../database/types';
+import { mapMessage } from '../utils/mapTypes/mapMessage';
 import { mapUser } from '../utils/mapTypes/mapUser';
 import { mapSprint } from '../utils/mapTypes/mapSprint';
 import { mapTemplate } from '../utils/mapTypes/mapTemplate';
+
+// Type guard to ensure a value is not null or undefined
+function assertNonNullable<T>(
+  value: T,
+  errorMessage: string
+): asserts value is NonNullable<T> {
+  if (value === null || value === undefined) {
+    throw new Error(errorMessage);
+  }
+}
 
 export async function createAndSendMessage(
   username: string,
@@ -76,12 +85,17 @@ export async function createAndSendMessage(
   await sendMessageToDiscord(channelId, message);
 
   console.log('Storing the message record in the database');
-  const newMessage: InsertableMessage = {
-    user_id: user.id as unknown as number,
-    template_id: template.id as unknown as number,
-    sprint_id: sprint.id as unknown as number,
+  // Ensure non-null and type inference
+  assertNonNullable(user.id, 'User ID is null');
+  assertNonNullable(template.id, 'Template ID is null');
+  assertNonNullable(sprint.id, 'Sprint ID is null');
+
+  const newMessage = mapMessage({
+    user_id: user.id,
+    template_id: template.id,
+    sprint_id: sprint.id,
     timestamp: new Date().toISOString(),
-  };
+  });
   await messageRepository.create(newMessage);
 
   console.log('Message successfully sent and stored');
