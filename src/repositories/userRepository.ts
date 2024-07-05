@@ -1,6 +1,13 @@
+import { ColumnType } from 'kysely';
 import { db } from '../database';
-import { Users as User, UsersUpdate } from '../database/types';
+import { Users as User } from '../database/types';
 import { mapUser } from '../utils/mapTypes/mapUser';
+
+type UpdatableUser = {
+  [K in keyof User]?: User[K] extends ColumnType<infer T, any, any>
+    ? T
+    : User[K];
+};
 
 export const userRepository = {
   async findAll(): Promise<User[]> {
@@ -35,10 +42,13 @@ export const userRepository = {
     return mapUser(createdUser);
   },
 
-  async update(id: number, user: Partial<UsersUpdate>): Promise<boolean> {
+  async update(id: number, user: Partial<UpdatableUser>): Promise<boolean> {
+    // Exclude 'id' field from the update object
+    const { id: _, ...updateData } = user;
+
     const result = await db
       .updateTable('users')
-      .set(user)
+      .set(updateData)
       .where('id', '=', id)
       .execute();
     return result.length > 0;
